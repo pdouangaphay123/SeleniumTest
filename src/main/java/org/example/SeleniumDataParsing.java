@@ -16,9 +16,13 @@ public class SeleniumDataParsing {
 
         // call method to parse data
         // calling to parse ebay
-        parsingSearch("iphone", "https://ebay.com", "gh-ac", "gh-btn", "s-item__title", "s-item__price");
+        parsingSearch("iphone", "https://ebay.com", "gh-ac", "gh-btn",
+                "s-item__title", "s-item__price");
         // calling to parse target
-        parsingSearch("iphone", "https://target.com", "search", "searchTerm", "//div[@title]", "//span[@data-test=\"current-price\"]");
+        parsingSearch("iphone", "https://target.com", "search",
+                "//button[@data-test='@web/Search/SearchButton']",
+                "//a[@class=\"styles__StyledLink-sc-vpsldm-0 styles__StyledTitleLink-sc-14ktig2-1 cbOry csOImU h-display-block h-text-bold h-text-bs\"][@data-test=\"product-title\"]",
+                "//span[@class][@data-test=\"current-price\"]/span");
     }
 
     public static void parsingSearch(String value, String webURL, String searchBy, String button, String extractTitle, String extractPrice) {
@@ -37,10 +41,14 @@ public class SeleniumDataParsing {
         else if (webURL.equals("https://target.com")){
 
             chromeTest.findElement(By.id(searchBy)).sendKeys(value);
-            chromeTest.findElement(By.xpath("//button[@data-test='@web/Search/SearchButton']")).submit();
-
-            List<WebElement> itemTitles = chromeTest.findElements(By.xpath("//a[@class=\"styles__StyledLink-sc-vpsldm-0 styles__StyledTitleLink-sc-14ktig2-1 cbOry csOImU h-display-block h-text-bold h-text-bs\"][@data-test=\"product-title\"]"));
-            List<WebElement> itemPrices = chromeTest.findElements(By.xpath("//span[@class][@data-test=\"current-price\"]/span"));
+            chromeTest.findElement(By.xpath(button)).submit();
+            try {
+                Thread.sleep(5000); // i don't know why, but if i don't put some way to slow the process down on target the read file is empty
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            List<WebElement> itemTitles = chromeTest.findElements(By.xpath(extractTitle));
+            List<WebElement> itemPrices = chromeTest.findElements(By.xpath(extractPrice));
             writeFile("parsing_data_target.txt", itemTitles, itemPrices);
         }
 
